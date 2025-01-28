@@ -1,51 +1,92 @@
+// import authConfig from "@/auth.config";
+// import NextAuth from "next-auth";
+// import {
+//     DEFAULT_LOGIN_REDIRECT,
+//     apiAuthPriefix,
+//     publicRoutes,
+//     authRoutes
+
+// }from "@/routes"
+
+// const {auth} = NextAuth(authConfig);
+
+// export default auth((req , ctx) => {
+//     const { nextUrl } = req
+//     const isLoggedIn = !!req.auth
+// console.log("nextUrl", nextUrl)
+//     const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPriefix)
+//     const isPublicRoute = publicRoutes.includes(nextUrl.pathname)
+//     const isAuthRoute = authRoutes.includes(nextUrl.pathname)
+
+//     if (isApiAuthRoute) {
+//         return null;
+//     }
+
+//     if (isAuthRoute){
+//         if(isLoggedIn){
+//             return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl) )
+//         }
+//     }
+    
+//     if(!isLoggedIn && !isPublicRoute){
+//         let callbackUrl = nextUrl.pathname;
+
+//         if (nextUrl.search) {
+//             callbackUrl += nextUrl.search
+//         }
+
+//         const encodedCallbackUrl = encodeURIComponent(callbackUrl);
+
+//         return Response.redirect(new URL(
+//             `/auth/login?callbackUrl=${encodedCallbackUrl}`,
+//              nextUrl
+//             ) ) 
+//     }
+
+//     return null;
+// });
+
+// export const config = {
+//     matcher: ['/((?!.*\\..*|_next).*)', '/', '/(api|trpc)(.*)'],
+// }
+
 import authConfig from "@/auth.config";
 import NextAuth from "next-auth";
 import {
-    DEFAULT_LOGIN_REDIRECT,
-    apiAuthPriefix,
-    publicRoutes,
-    authRoutes
+  DEFAULT_LOGIN_REDIRECT,
+  apiAuthPriefix,
+  publicRoutes,
+  authRoutes,
+} from "@/routes";
 
-}from "@/routes"
+const { auth } = NextAuth(authConfig);
 
-const {auth} = NextAuth(authConfig);
+export default auth((req, ctx) => {
+  const { nextUrl } = req;
+  const isLoggedIn = !!req.auth;
+  console.log("nextUrl", nextUrl);
 
-export default auth( (req) => {
-    const { nextUrl} = req
-    const isLoggedIn = !!req.auth
-console.log("nextUrl", nextUrl)
-    const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPriefix)
-    const isPublicRoute = publicRoutes.includes(nextUrl.pathname)
-    const isAuthRoute = authRoutes.includes(nextUrl.pathname)
+  const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPriefix);
+  const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
+  const isAuthRoute = authRoutes.includes(nextUrl.pathname);
 
-    if (isApiAuthRoute) {
-        return null;
+  if (isApiAuthRoute) {
+    return undefined; 
+  }
+
+  if (isAuthRoute) {
+    if (isLoggedIn) {
+      return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
     }
+  }
 
-    if (isAuthRoute){
-        if(isLoggedIn){
-            return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl) )
-        }
-    }
-    
-    if(!isLoggedIn && !isPublicRoute){
-        let callbackUrl = nextUrl.pathname;
+  if (!isLoggedIn && !isPublicRoute) {
+    return Response.redirect(new URL("/auth/login", nextUrl));
+  }
 
-        if (nextUrl.search) {
-            callbackUrl += nextUrl.search
-        }
-
-        const encodedCallbackUrl = encodeURIComponent(callbackUrl);
-
-        return Response.redirect(new URL(
-            `/auth/login?callbackUrl=${encodedCallbackUrl}`,
-             nextUrl
-            ) ) 
-    }
-
-    return null;
+  return undefined; 
 });
 
 export const config = {
-    matcher: ['/((?!.*\\..*|_next).*)', '/', '/(api|trpc)(.*)'],
-}
+  matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
+};
