@@ -24,7 +24,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { title: 'Home', href: '/DashBoard', icon: Home },
+  { title: 'Home', href: '/Dashboard', icon: Home },
   { title: 'Invoices', href: '/Invoices', icon: FileText },
   { title: 'Projects', href: '/Projects', icon: FolderKanban },
   { title: 'Settings', href: '/settings', icon: Settings },
