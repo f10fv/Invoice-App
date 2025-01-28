@@ -62,6 +62,17 @@ enum InvoiceStatus {
   PENDING
 }
 
+model Projects {
+  id      String    @id @default(cuid())
+  projectName String
+  projectNumber Int
+  customerName String
+  description  String
+  startDate    DateTime
+  endDate      DateTime
+  status       String
+}
+
 
 model Account {
   id                 String  @id @default(cuid())
