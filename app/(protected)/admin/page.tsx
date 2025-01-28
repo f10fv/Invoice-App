@@ -10,7 +10,7 @@ import { UserRole } from "@prisma/client";
 import { toast } from "sonner";
 
  
-export const AdminPage =  () => {
+export default function AdminPage() {
     const onServerActionClick = () => {
         admin()
         .then((data) => {
@@ -66,5 +66,3 @@ export const AdminPage =  () => {
     )
 
 }
-
-export default AdminPage;
