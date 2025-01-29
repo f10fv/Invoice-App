@@ -50,7 +50,6 @@ export default function CreateInvoice() {
     note: "",
     total: 0,
   });
-
   const handleFormChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -63,73 +62,30 @@ export default function CreateInvoice() {
     }));
   };
 
-  // const handleItemChange = (index: number, field: string, value: string | number) => {
-  //   const updatedItems = [...invoice.invoiceItems];
-  //   updatedItems[index] = {
-  //     ...updatedItems[index],
-  //     [field]: value,
-  //     amount: (Number(updatedItems[index].quantity) || 0) * (Number(updatedItems[index].rate) || 0),
-  //   };
-  //   setInvoice((prevInvoice) => ({
-  //     ...prevInvoice,
-  //     invoiceItems: updatedItems,
-  //     total: updatedItems.reduce((total, item) => total + (item.amount || 0), 0),
-  //   }));
-  // };
-
-  // const handleItemChange = (
-  //   index: number,
-  //   field: keyof Omit<InvoiceItem, 'id'>,
-  //   value: string | number
-  // ) => {
-  //   const updatedItems = [...invoice.invoiceItems];
-  //   const item = updatedItems[index];
-
-  //   item[field] = value ;
-
-  //   const quantity = Number(item.quantity) || 0;
-  //   const rate = Number(item.rate) || 0;
-  //   item.amount = quantity * rate;
-
-  //   const updatedTotal = updatedItems.reduce(
-  //     (total, item) => total + (item.amount || 0),
-  //     0
-  //   );
-
-  //   setInvoice((prevInvoice) => ({
-  //     ...prevInvoice,
-  //     invoiceItems: updatedItems,
-  //     total: updatedTotal,
-  //   }));
-  // };
 
   const handleItemChange = (
     index: number,
-    field: keyof Omit<InvoiceItem, 'id'>, // Still omit 'id' from the InvoiceItem
+    field: keyof Omit<InvoiceItem, 'id'>, 
     value: string | number
   ) => {
     const updatedItems = [...invoice.invoiceItems];
     const item = updatedItems[index];
   
-    // Properly type the values for each field
     if (field === 'description') {
-      item[field] = value as string; // description is a string
+      item[field] = value as string; 
     } else if (field === 'quantity' || field === 'rate') {
-      item[field] = Number(value) || 0; // quantity and rate are numbers
+      item[field] = Number(value) || 0;
     }
   
-    // Calculate the amount based on quantity and rate
     const quantity = Number(item.quantity) || 0;
     const rate = Number(item.rate) || 0;
     item.amount = quantity * rate;
   
-    // Recalculate the total
     const updatedTotal = updatedItems.reduce(
       (total, item) => total + (item.amount || 0),
       0
     );
   
-    // Update the state with the modified invoice items and total
     setInvoice((prevInvoice) => ({
       ...prevInvoice,
       invoiceItems: updatedItems,
@@ -148,16 +104,14 @@ export default function CreateInvoice() {
         },
         body: JSON.stringify(invoice),
       });
-
+  
       if (response.ok) {
         alert("Invoice submitted successfully!");
       }
     } catch (error) {
       console.error("Error submitting invoice:", error);
     }
-    console.log("Invoice data:", invoice);
   };
-
   return (
     <Card className="w-full max-w-6xl mx-auto bg-white">
       <CardContent className="p-6">
