@@ -1,9 +1,16 @@
-'use client'
+"use client";
 
-import * as React from 'react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { type LucideIcon, Home, Settings, Users, FileText, FolderKanban  } from 'lucide-react'
+import * as React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  type LucideIcon,
+  Home,
+  Settings,
+  Users,
+  FileText,
+  FolderKanban,
+} from "lucide-react";
 
 import {
   Sidebar,
@@ -15,23 +22,28 @@ import {
   SidebarMenuButton,
   SidebarProvider,
   SidebarTrigger,
-} from '@/components/ui/sidebar'
+} from "@/components/ui/sidebar";
+import { logout } from '@/actions/logout'
+
 
 interface NavItem {
-  title: string
-  href: string
-  icon: LucideIcon
+  title: string;
+  href: string;
+  icon: LucideIcon;
 }
 
 const navItems: NavItem[] = [
-  { title: 'Home', href: '/Dashboard', icon: Home },
-  { title: 'Invoices', href: '/Invoices', icon: FileText },
-  { title: 'Projects', href: '/Projects', icon: FolderKanban },
-  { title: 'Settings', href: '/settings', icon: Settings },
-]
+  { title: "Home", href: "/Dashboard", icon: Home },
+  { title: "Invoices", href: "/Invoices", icon: FileText },
+  { title: "Projects", href: "/Projects", icon: FolderKanban },
+  { title: "Settings", href: "/settings", icon: Settings },
+];
 
-export function MainSidebar({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  const pathname = usePathname()
+export function MainSidebar({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  const pathname = usePathname();
 
   return (
     <Sidebar>
@@ -68,12 +80,11 @@ export function MainSidebar({ className, ...props }: React.HTMLAttributes<HTMLDi
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <Link href="/logout">Logout</Link>
+              <button onClick={logout}>Log out</button>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }
-

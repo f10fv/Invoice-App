@@ -12,13 +12,13 @@ export const UserInfo = ({
     label
 }: UserInfoProps) => {
     return (
-        <Card className="w-[600px] shadow-md" >
+        <Card className="w-[900px] h-[85vh] shadow-md" >
            <CardHeader>
                 <p className="text-2xl font-semibold text-center">
                     {label}
                 </p>
            </CardHeader>
-           <CardContent className="space-y-4">
+           <CardContent className="space-y-7">
                 <div className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                     <p className="text-sm font-medium">
                         ID
