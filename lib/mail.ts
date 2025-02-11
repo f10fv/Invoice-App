@@ -3,7 +3,7 @@ import fs from "fs/promises"
 import path from "path"
 import fontkit from "@pdf-lib/fontkit"
 import jsPDF from "jspdf";
-import autoTable from "jspdf-autoTable";
+import autoTable from "jspdf-autotable";
 
 
 const resend = new Resend(process.env.RESEND_API_KEY);

@@ -23,7 +23,8 @@ import { PlusCircle } from "lucide-react";
 import { InvoiceItem } from "@prisma/client";
 import fontkit from "@pdf-lib/fontkit";
 import jsPDF from "jspdf";
-import autoTable from "jspdf-autoTable";
+import autoTable from "jspdf-autotable";
+
 
 interface Invoice {
   id: string;
