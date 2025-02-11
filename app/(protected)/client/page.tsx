@@ -3,7 +3,7 @@
 import { UserInfo } from "@/components/user-info";
 import { currentUser } from "@/lib/auth";
 
-const ClientPage = async () => {
+export default async function ClientPage() {
     const user = await currentUser();
 
     return (
@@ -15,5 +15,3 @@ const ClientPage = async () => {
         </div>
     )
 }
-
-export default ClientPage;

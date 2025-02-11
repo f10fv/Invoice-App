@@ -4,12 +4,13 @@
 // import { useRouter } from "next/navigation"
 // import { Input } from "@/components/ui/input"
 // import { Button } from "@/components/ui/button"
-// import { Search, FileText, Briefcase } from "lucide-react"
+// import { Search, FileText, Briefcase, User } from "lucide-react"
 // import debounce from "lodash/debounce"
 
 // type SearchResult = {
 //   invoices: Array<{ id: string; invoiceNumber: string; clientName: string }>
 //   projects: Array<{ id: string; projectName: string; projectNumber: string }>
+//   customers: Array<{ id: string; customerName: string; customerEmail: string }>
 // }
 
 // export default function GlobalSearch() {
@@ -63,11 +64,13 @@
 //     }
 //   }, [])
 
-//   const handleSelect = (type: "invoice" | "project", id: string) => {
+//   const handleSelect = (type: "invoice" | "project" | "customer", id: string) => {
 //     if (type === "invoice") {
 //       router.push(`/Invoices/Invoice-View?id=${id}`)
-//     } else {
+//     } else if (type === "project") {
 //       router.push(`/Projects/Project-View?id=${id}`)
+//     } else if (type === "customer") {
+//       router.push(`/Customers/Customer-View?id=${id}`)
 //     }
 //     setIsOpen(false)
 //     setQuery("")
@@ -81,7 +84,7 @@
 //       <div className="flex items-center space-x-2">
 //         <Input
 //           type="text"
-//           placeholder="Search invoices or projects..."
+//           placeholder="Search invoices, projects, or customers..."
 //           value={query}
 //           onChange={(e) => setQuery(e.target.value)}
 //           className="w-full"
@@ -118,15 +121,32 @@
 //                   className="px-4 py-2 cursor-pointer hover:bg-gray-100"
 //                   onClick={() => handleSelect("project", project.id)}
 //                 >
+//                   <Briefcase className="inline-block mr-2 h-4 w-4" />
 //                   <span>
 //                     {project.projectName} - {project.projectNumber}
-//                     </span>
+//                   </span>
+//                 </div>
+//               ))}
+//             </div>
+//           )}
+//           {results.customers && results.customers.length > 0 && (
+//             <div>
+//               <h3 className="px-4 py-2 text-sm font-semibold text-gray-500">Customers</h3>
+//               {results.customers.map((customer) => (
+//                 <div
+//                   key={customer.id}
+//                   className="px-4 py-2 cursor-pointer hover:bg-gray-100"
+//                   onClick={() => handleSelect("customer", customer.id)}
+//                 >
+//                   <User className="inline-block mr-2 h-4 w-4" />
+//                   <span>{customer.customerName} - {customer.customerEmail}</span>
 //                 </div>
 //               ))}
 //             </div>
 //           )}
 //           {(!results.invoices || results.invoices.length === 0) &&
-//             (!results.projects || results.projects.length === 0) && (
+//             (!results.projects || results.projects.length === 0) &&
+//             (!results.customers || results.customers.length === 0) && (
 //               <div className="px-4 py-2 text-sm text-gray-500">No results found.</div>
 //             )}
 //         </div>

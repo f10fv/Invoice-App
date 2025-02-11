@@ -93,7 +93,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
         where: { id },
         data: {
           invoiceName: invoice.invoiceName,
-          invoiceNumber: parseInvoiceNumber ?? 0,        
+          invoiceNumber: invoice.invoiceNumber,        
           currency: invoice.currency,
           fromName: invoice.fromName,
           fromEmail: invoice.fromEmail,
