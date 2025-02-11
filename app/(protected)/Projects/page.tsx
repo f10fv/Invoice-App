@@ -57,7 +57,7 @@ export default function InvoicesTable() {
   const handleMarkAsCompleted = async (id: string) => {
     try {
       const response = await fetch(`/api/project/${id}`, {
-        method: "PUT",
+        method: "PATCH",
       });
       if (!response.ok) {
         throw new Error("Failed to mark invoice as paid");
@@ -170,6 +170,16 @@ export default function InvoicesTable() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => handleMarkAsCompleted(project.id)}>Mark as completed</DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => {window.location.href = `/Projects/Project-View?id=${project.id}`}}
+                      >
+                        View project
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                      onClick={() => {window.location.href = `/Projects/Project-Edit?id=${project.id}`}}
+                      >
+                        Edit project
+                      </DropdownMenuItem>
                       <DropdownMenuItem 
                       className="text-red-600"
                       onClick={() => handleDelete(project.id)}

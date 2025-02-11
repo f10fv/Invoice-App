@@ -36,6 +36,7 @@ const navItems: NavItem[] = [
   { title: "Home", href: "/Dashboard", icon: Home },
   { title: "Invoices", href: "/Invoices", icon: FileText },
   { title: "Projects", href: "/Projects", icon: FolderKanban },
+  { title: "Customers", href: "/Customers", icon: Users },
   { title: "Settings", href: "/settings", icon: Settings },
 ];
 
