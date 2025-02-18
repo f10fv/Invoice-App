@@ -32,7 +32,7 @@
 
 //     useEffect(() => {
 //       if (!id) return;
-  
+
 //       setLoading(true);
 //       fetch(`/api/project/${id}`)
 //         .then((response) => response.json())
@@ -247,14 +247,27 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { CalendarIcon } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+interface Client {
+  id: string;
+  customerName: string;
+}
 
 export default function EditProjectPage() {
-  const id = useSearchParams().get("id")
-  const [startDate, setStartDate] = useState(new Date())
-  const [endDate, setEndDate] = useState(new Date())
-  const [loading, setLoading] = useState(true)
-  const projectRef = useRef(null)
-
+  const id = useSearchParams().get("id");
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
+  const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const projectRef = useRef(null);
+  const [clients, setClients] = useState<Client[]>([]);
   const [project, setProject] = useState({
     projectName: "",
     projectNumber: "",
@@ -262,25 +275,64 @@ export default function EditProjectPage() {
     description: "",
     startDate: startDate,
     endDate: endDate,
-  })
+  });
 
   useEffect(() => {
-    if (!id) return
+    if (!id) return;
+  
+    setLoading(true);
+  
+    const fetchProject = async () => {
+      try {
+        const response = await fetch(`/api/project/${id}`);
+        const projectData = await response.json();
+  
+        setProject(projectData);
+        setStartDate(new Date(projectData.startDate));
+        setEndDate(new Date(projectData.endDate));
+        projectRef.current = projectData;
+  
+        console.log("Fetched Project:", projectData);
+      } catch (error) {
+        console.error("Error fetching project:", error);
+      }
+    };
+  
+    const fetchClients = async () => {
+      try {
+        const response = await fetch("/api/customers");
+        const clientData = await response.json();
+        setClients(clientData);
+      } catch (error) {
+        console.error("Error fetching client data:", error);
+      }
+    };
+  
+    Promise.all([fetchProject(), fetchClients()]).then(() => setLoading(false));
+  }, [id]);
+  
+  useEffect(() => {
+    if (clients.length > 0 && project.customerName) {
+      const client = clients.find((c) => c.customerName === project.customerName);
+      if (client) {
+        setProject((prev) => ({
+          ...prev,
+          customerName: client.id,
+        }));
+      }
+    }
+  }, [clients, project.customerName]);
 
-    setLoading(true)
-    fetch(`/api/project/${id}`)
-      .then((response) => response.json())
-      .then((data) => {
-        setProject(data)
-        projectRef.current = data
-        setLoading(false)
-        console.log("This is the project ", data)
-      })
-      .catch((error) => {
-        console.error("Error fetching project:", error)
-        setLoading(false)
-      })
-  }, [id])
+  const handleClientChange = (clientId: string) => {
+    const client = clients.find((c) => c.id === clientId);
+    console.log("this the client", client);
+    if (client) {
+      setProject((prev) => ({
+        ...prev,
+        customerName: client.customerName,
+      }));
+    }
+  };
 
   const handleFormChange = (
     e: React.ChangeEvent<
@@ -296,23 +348,35 @@ export default function EditProjectPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("project data:", project);
+    setIsSubmitting(true);
+    const selectedClient = clients.find((c) => c.id === project.customerName);
+    
+    const updatedProject = {
+      ...project,
+      customerName: selectedClient ? selectedClient.customerName : project.customerName, // Convert ID back to name
+    };
+  
+    console.log("Submitting project data:", updatedProject);
+  
     try {
       const response = await fetch(`/api/project/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(project),
+        body: JSON.stringify(updatedProject),
       });
-
+  
       if (response.ok) {
-        alert("project submitted successfully!");
+        alert("Project submitted successfully!");
       }
     } catch (error) {
       console.error("Error submitting project:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
+  
 
   return (
     <Card className="w-full max-w-6xl mx-auto bg-white">
@@ -342,19 +406,32 @@ export default function EditProjectPage() {
                   name="projectNumber"
                   value={project.projectNumber}
                   onChange={handleFormChange}
-                  className="rounded-l-none"
+                  readOnly
+                  className="bg-gray-100 cursor-not-allowed"
                 />
               </div>
             </div>
 
             <div>
               <Label htmlFor="currency">Customer Name</Label>
-              <Input
-                name="customerName"
+              <Select
                 value={project.customerName}
-                onChange={handleFormChange}
-                placeholder="Enter the customer name"
-              />
+                onValueChange={handleClientChange}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select client">
+                    {clients.find((c) => c.id === project.customerName)
+                      ?.customerName || "Select client"}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {clients.map((client) => (
+                    <SelectItem key={client.id} value={client.id}>
+                      {client.customerName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -455,8 +532,8 @@ export default function EditProjectPage() {
           </div>
 
           <div className="flex justify-center">
-            <Button onClick={handleSubmit} type="submit" className="w-full">
-              Submit
+            <Button onClick={handleSubmit} type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? "Saving..." : "Save"}
             </Button>
           </div>
         </form>

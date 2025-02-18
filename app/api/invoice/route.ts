@@ -17,7 +17,6 @@ interface Customers {
 }
 
 interface Invoice {
-  invoiceName: string;
   invoiceNumber: string;
   currency: string;
   fromName: string;
@@ -35,16 +34,15 @@ interface Invoice {
   invoiceItemRate: number;
   note: string;
   total: number;
+  projectId: string;
 }
 
 // export async function POST(request: Request) {
 //   try {
 //     const invoice: Invoice = await request.json();
+//     const action = await request.json();
 //     console.log("Invoice data:", invoice);
 
-//     const parseInvoiceNumber = isNaN(parseInt(invoice.invoiceNumber))
-//       ? null
-//       : parseInt(invoice.invoiceNumber);
 //     const parseDueDate = isNaN(parseInt(invoice.dueDate))
 //       ? null
 //       : parseInt(invoice.dueDate);
@@ -71,10 +69,18 @@ interface Invoice {
 //       customerId = newCustomer.id;
 //     }
 
+//     const lastInvoice = await db.invoice.findFirst({
+//       orderBy: { invoiceNumber: "desc" },
+//     });
+
+//     const lastNumber = lastInvoice
+//     ? parseInt(`${lastInvoice.invoiceNumber}`.split("-")[1])
+//     : 0;
+//     const newInvoiceNumber = `INV-${String(lastNumber + 1).padStart(3, "0")}`;
+
 //     const newInvoice = await db.invoice.create({
 //       data: {
-//         invoiceName: invoice.invoiceName,
-//         invoiceNumber: parseInvoiceNumber !== null ? parseInvoiceNumber : 0,
+//         invoiceNumber: newInvoiceNumber,
 //         currency: invoice.currency,
 //         fromName: invoice.fromName,
 //         fromEmail: invoice.fromEmail,
@@ -90,13 +96,14 @@ interface Invoice {
 //         invoiceItems: {
 //           create: invoice.invoiceItems.map((item) => ({
 //             description: item.description,
-//             quantity: item.quantity,
-//             rate: item.rate,
-//             amount: item.amount,
+//             quantity: Number(item.quantity),
+//             rate: Number(item.rate),
+//             amount: Number(item.amount),
 //           })),
 //         },
 //         customer: { connect: { id: customerId } },
-//       } as any
+//         project: { connect: { id: invoice.projectId } },
+//       } as any,
 //     });
     
 
@@ -107,10 +114,8 @@ interface Invoice {
 //       invoice.fromName,
 //       invoice.fromAddress,
 //       invoice.fromEmail,
-//       invoice.invoiceName,
-//       invoice.note,
 //       invoice.currency,
-//       invoice.invoiceNumber,
+//       newInvoiceNumber,
 //       invoice.dueDate,
 //       new Date(invoice.date).toLocaleDateString(),
 //       invoice.invoiceItems,
@@ -133,47 +138,49 @@ interface Invoice {
 
 export async function POST(request: Request) {
   try {
-    const invoice: Invoice = await request.json();
-    console.log("Invoice data:", invoice);
-
-    const parseDueDate = isNaN(parseInt(invoice.dueDate))
-      ? null
-      : parseInt(invoice.dueDate);
-
-    console.log("Invoice items:", invoice.invoiceItems);
-
-    const existingCustomer = await db.customers.findUnique({
-      where: { customerEmail: invoice.clientEmail },
-    });
-
-    let customerId: string;
-
-    if (existingCustomer) {
-      customerId = existingCustomer.id;
-    } else {
-      const newCustomer = await db.customers.create({
-        data: {
-          customerName: invoice.clientName,
-          customerEmail: invoice.clientEmail,
-          customerAddress: invoice.clientAddress,
-          invoices: { create: [] },
-        },
-      });
-      customerId = newCustomer.id;
+    const rawBody = await request.text()
+    console.log("Raw request body:", rawBody)
+    let data
+    try {
+      data = JSON.parse(rawBody)
+    } catch (parseError) {
+      console.error("Error parsing JSON:", parseError)
+      return NextResponse.json({ error: "Invalid JSON in request body" }, { status: 400 })
     }
+
+    const { invoice, action } = data
+
+    if (!invoice) {
+      return NextResponse.json({ error: "Invoice data is missing" }, { status: 400 })
+    }
+    console.log("Invoice data:", invoice)
+
+    const requiredFields = ["dueDate", "clientEmail", "clientName", "clientAddress", "projectId"]
+    for (const field of requiredFields) {
+      if (!(field in invoice)) {
+        return NextResponse.json({ error: `Missing required field: ${field}` }, { status: 400 })
+      }
+    }
+
+    const parseDueDate = isNaN(Number.parseInt(invoice.dueDate)) ? null : Number.parseInt(invoice.dueDate)
+
+    console.log("Invoice items:", invoice.invoiceItems)
+
+    const client = await db.customers.findFirst({
+      where: { customerEmail: invoice.clientEmail },
+      select: { id: true },
+    })
+  
 
     const lastInvoice = await db.invoice.findFirst({
       orderBy: { invoiceNumber: "desc" },
-    });
+    })
 
-    const lastNumber = lastInvoice
-    ? parseInt(`${lastInvoice.invoiceNumber}`.split("-")[1])
-    : 0;
-    const newInvoiceNumber = `INV-${String(lastNumber + 1).padStart(3, "0")}`;
+    const lastNumber = lastInvoice ? Number.parseInt(`${lastInvoice.invoiceNumber}`.split("-")[1]) : 0
+    const newInvoiceNumber = `INV-${String(lastNumber + 1).padStart(3, "0")}`
 
     const newInvoice = await db.invoice.create({
       data: {
-        invoiceName: invoice.invoiceName,
         invoiceNumber: newInvoiceNumber,
         currency: invoice.currency,
         fromName: invoice.fromName,
@@ -188,44 +195,47 @@ export async function POST(request: Request) {
         total: invoice.total,
         status: "PENDING",
         invoiceItems: {
-          create: invoice.invoiceItems.map((item) => ({
-            description: item.description,
-            quantity: item.quantity,
-            rate: item.rate,
-            amount: item.amount,
-          })),
+          create: invoice.invoiceItems.map(
+            (item: { description: string; quantity: number; rate: number; amount: number }) => ({
+              description: item.description,
+              quantity: Number(item.quantity),
+              rate: Number(item.rate),
+              amount: Number(item.amount),
+            }),
+          ),
         },
-        customer: { connect: { id: customerId } },
+        customer: { connect: { id: client?.id } },
+        project: { connect: { id: invoice.projectId } },
       } as any,
-    });
+    })
 
-    await sendInvoiceEmail(
-      invoice.clientEmail,
-      invoice.clientName,
-      invoice.clientAddress,
-      invoice.fromName,
-      invoice.fromAddress,
-      invoice.fromEmail,
-      invoice.invoiceName,
-      invoice.note,
-      invoice.currency,
-      newInvoiceNumber,
-      invoice.dueDate,
-      new Date(invoice.date).toLocaleDateString(),
-      invoice.invoiceItems,
-      invoice.total
-    );
+    if (action === "send") {
+      await sendInvoiceEmail(
+        invoice.clientEmail,
+        invoice.clientName,
+        invoice.clientAddress,
+        invoice.fromName,
+        invoice.fromAddress,
+        invoice.fromEmail,
+        invoice.currency,
+        newInvoiceNumber,
+        invoice.dueDate,
+        new Date(invoice.date).toLocaleDateString(),
+        invoice.invoiceItems,
+        invoice.total,
+      )
+    }
 
     return NextResponse.json(
-      { message: "Invoice created successfully", data: newInvoice },
-      { status: 201 }
-    );
+      {
+        message: action === "save" ? "Invoice saved successfully" : "Invoice created and sent successfully",
+        data: newInvoice,
+      },
+      { status: 201 },
+    )
   } catch (error) {
-    console.error("Error creating invoice:", error);
-    return NextResponse.json(
-      { error: "Failed to create invoice" },
-      { status: 500 }
-    );
+    console.error("Error creating invoice:", error)
+    return NextResponse.json({ error: "Failed to create invoice" }, { status: 500 })
   }
 }
 

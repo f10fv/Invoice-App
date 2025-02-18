@@ -284,7 +284,7 @@ export default function InvoicesTable() {
           <TableBody>
             {invoices.map((invoice) => (
               <TableRow key={invoice.invoiceNumber}>
-                <TableCell className="font-medium">
+                <TableCell className="font-medium cursor-pointer" onClick={() => window.location.replace(`/Invoices/Invoice-View?id=${invoice.id}`)}>
                   #{invoice.invoiceNumber}
                 </TableCell>
                 <TableCell>{invoice.clientName}</TableCell>

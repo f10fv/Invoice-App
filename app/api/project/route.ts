@@ -12,7 +12,7 @@ export async function POST(request: Request) {
         const newProject = await db.projects.create({
             data: {
                 projectName: project.projectName,
-                projectNumber: parseProjectNumber,
+                projectNumber: project.projectNumber,
                 customerName: project.customerName,
                 description: project.description,
                 startDate: new Date(project.startDate),

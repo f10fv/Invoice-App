@@ -28,7 +28,6 @@ model User {
 
 model Invoice {
   id String @id @default(uuid())
-  invoiceName   String
   total         Int
   status        InvoiceStatus
   date          DateTime
@@ -45,8 +44,10 @@ model Invoice {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   invoiceItems        InvoiceItem[]
-  customerId String?  // Make this nullable
+  customerId String?  
   customer   Customers? @relation(fields: [customerId], references: [id], onDelete: SetNull)  
+  projectId String?
+  project   Projects? @relation(fields: [projectId], references: [id], onDelete: SetNull)
 }
 
 model InvoiceItem {
@@ -67,12 +68,15 @@ enum InvoiceStatus {
 model Projects {
   id      String    @id @default(cuid())
   projectName String
-  projectNumber Int
+  projectNumber String
   customerName String
   description  String
   startDate    DateTime
   endDate      DateTime
   status       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  invoices Invoice[]
 }
 
 model Customers {

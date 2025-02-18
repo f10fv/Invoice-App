@@ -928,6 +928,7 @@ import fontkit from "@pdf-lib/fontkit";
 import path from "path";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { sendInvoiceEmail } from "@/lib/mail";
 interface InvoiceData {
   invoiceDate: any;
   id: string;
@@ -943,7 +944,7 @@ interface InvoiceData {
   clientEmail: string;
   clientAddress: string;
   currency: string;
-  invoiceNumber: number;
+  invoiceNumber: string;
   note?: string;
   createdAt: string;
   updatedAt: string;
@@ -977,6 +978,7 @@ export default function InvoicePage() {
         setLoading(false);
       });
   }, [id]);
+
 
 
 const saveInvoicePdf = async () => {
@@ -1103,6 +1105,21 @@ doc.text(`${invoice.total.toFixed(2)} ${invoice.currency}`, 480, finalY);
     return format(parsedDate, "dd/MM/yyyy");
   };
 
+  const handelSendEmail = async () => {
+    try {
+      const response = await fetch(`/api/Email`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(invoice),
+      });
+    } catch (error) {
+      
+    }
+  }
+
+
   if (loading) return <div>Loading...</div>;
   if (!invoice) return <div>No invoice found</div>;
 
@@ -1195,7 +1212,7 @@ doc.text(`${invoice.total.toFixed(2)} ${invoice.currency}`, 480, finalY);
               <div className="w-64 space-y-2">
                 <div className="flex justify-between font-semibold">
                   <span>Total ({invoice.currency})</span>
-                  <span>${invoice.total.toFixed(2)}</span>
+                  <span>${invoice.total}</span>
                 </div>
               </div>
             </div>
@@ -1209,7 +1226,11 @@ doc.text(`${invoice.total.toFixed(2)} ${invoice.currency}`, 480, finalY);
               </p>
             </div>
           )}
-          <Button onClick={saveInvoicePdf}>Download Invoice</Button>
+          <div className="space-x-2">
+            <Button onClick={saveInvoicePdf}>Download Invoice</Button>
+            <Button variant={"secondary"} onClick={() => window.location.replace(`/Invoices/Invoice-Edit?id=${invoice.id}`)}>Edit Invoice</Button>
+            <Button variant={"secondary"} onClick={handelSendEmail}>Send Email</Button>
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     const invoices = await db.invoice.findMany({
       where: {
         OR: [
-          { invoiceName: { contains: query, mode: "insensitive" } },
+          { invoiceNumber: { contains: query, mode: "insensitive" } },
           { clientName: { contains: query, mode: "insensitive" } },
         ],
       },
@@ -24,6 +24,7 @@ export async function GET(request: Request) {
     const projects = await db.projects.findMany({
       where: {
         OR: [
+          { projectNumber: { contains: query, mode: "insensitive" } },
           { projectName: { contains: query, mode: "insensitive" } },
           { customerName: { contains: query, mode: "insensitive" } },
         ],

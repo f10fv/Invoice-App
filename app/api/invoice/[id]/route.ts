@@ -39,6 +39,8 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
         where: { id: id as string },
         include: {
           invoiceItems: true,
+          customer: true,
+          project: true,
         },
       });
       console.log("This the invoice" ,invoice);
@@ -58,7 +60,6 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   }
   
   interface Invoice {
-    invoiceName: string;
     invoiceNumber: string;
     currency: string;
     fromName: string;
@@ -75,25 +76,28 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     invoiceItemRate: number;
     note: string;
     total: number;
-  }
+    projectId: string
+    customerId: string
+  }  
   export async function PUT(req: Request, { params }: { params: { id: string } }) {
-    const { id } = params;
-    const invoice: Invoice = await req.json();
-    console.log("Invoice data:", invoice);
+    const { id } = params
+    const { invoice, action } = await req.json()
+    console.log("Edit Invoice data:", { invoice, action })
   
-    const parseInvoiceNumber = isNaN(parseInt(invoice.invoiceNumber))
+    const parseInvoiceNumber = isNaN(Number.parseInt(invoice.invoiceNumber))
       ? null
-      : parseInt(invoice.invoiceNumber);
-    const parseDueDate = isNaN(parseInt(invoice.dueDate))
-      ? null
-      : parseInt(invoice.dueDate);
-  
+      : Number.parseInt(invoice.invoiceNumber)
+    const parseDueDate = isNaN(Number.parseInt(invoice.dueDate)) ? null : Number.parseInt(invoice.dueDate)
+    const client = await db.customers.findFirst({
+      where: { customerEmail: invoice.clientEmail },
+      select: { id: true },
+    })
+    console.log("this the client id", client)
     try {
       const updatedInvoice = await db.invoice.update({
         where: { id },
         data: {
-          invoiceName: invoice.invoiceName,
-          invoiceNumber: invoice.invoiceNumber,        
+          invoiceNumber: invoice.invoiceNumber,
           currency: invoice.currency,
           fromName: invoice.fromName,
           fromEmail: invoice.fromEmail,
@@ -101,29 +105,35 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
           clientName: invoice.clientName,
           clientEmail: invoice.clientEmail,
           clientAddress: invoice.clientAddress,
+          customerId: client?.id,
+          projectId: invoice.projectId,
           date: new Date(invoice.date),
           dueDate: parseDueDate ?? 0,
           note: invoice.note,
           total: invoice.total,
           status: "PENDING",
           invoiceItems: {
-            updateMany: invoice.invoiceItems.map((item, index) => ({
-              where: { id: item.id },
-              data: {
-                description: item.description,
-                quantity: item.quantity,
-                rate: item.rate,
-                amount: item.amount,
-              },
+            deleteMany: {}, // Delete existing items
+            create: invoice.invoiceItems.map((item: any) => ({
+              description: item.description,
+              quantity: Number(item.quantity),
+              rate: Number(item.rate),
+              amount: Number(item.amount),
             })),
           },
         },
-      });
+        include: {
+          customer: true,
+          project: true,
+          invoiceItems: true,
+        },
+      })
   
-      return NextResponse.json(updatedInvoice, { status: 200 });
+      return NextResponse.json(updatedInvoice, { status: 200 })
     } catch (error) {
-      console.error('Error updating invoice:', error);
-      return NextResponse.json({ message: 'Failed to update invoice' }, { status: 500 });
+      console.error("Error updating invoice:", error)
+      return NextResponse.json({ message: "Failed to update invoice" }, { status: 500 })
     }
   }
+  
   

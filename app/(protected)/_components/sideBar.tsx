@@ -34,10 +34,9 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { title: "Home", href: "/Dashboard", icon: Home },
-  { title: "Invoices", href: "/Invoices", icon: FileText },
-  { title: "Projects", href: "/Projects", icon: FolderKanban },
   { title: "Customers", href: "/Customers", icon: Users },
-  { title: "Settings", href: "/settings", icon: Settings },
+  { title: "Projects", href: "/Projects", icon: FolderKanban },
+  { title: "Invoices", href: "/Invoices", icon: FileText },
 ];
 
 export function MainSidebar({
@@ -51,7 +50,7 @@ export function MainSidebar({
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg">
+            <SidebarMenuButton className="p-0" size="lg">
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                 <Users className="size-4" />
               </div>
@@ -69,7 +68,7 @@ export function MainSidebar({
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton asChild isActive={pathname === item.href}>
                 <Link href={item.href}>
-                  <item.icon className="mr-2 h-4 w-4" />
+                  <item.icon className="ml-2 mr-2 h-4 w-4" />
                   {item.title}
                 </Link>
               </SidebarMenuButton>
@@ -81,7 +80,7 @@ export function MainSidebar({
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <button onClick={logout}>Log out</button>
+              <button onClick={() => {window.location.replace("/settings")}}><Settings /> Settings</button>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

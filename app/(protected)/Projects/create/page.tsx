@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -14,6 +14,31 @@ import {
 } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { CalendarIcon } from "lucide-react";
+import { z } from "zod";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
+const projectSchema = z.object({
+  projectName: z.string().min(3, "Project name must be at least 3 characters"),
+  projectNumber: z.string(),
+  // customerName: z.string().min(1, "Customer name is required"),
+  description: z.string().optional(),
+  startDate: z.date(),
+  endDate: z.date().refine((date) => date >= new Date(), "End date must be after start date")
+}).superRefine((data, ctx) => {
+  if (data.endDate < data.startDate) {
+    ctx.addIssue({
+      path: ['endDate'],
+      message: 'End date must be after start date',
+      code: z.ZodIssueCode.custom
+    });
+  }
+});
+
+
+interface Client {
+  id: string
+  customerName: string
+}
 
 export default function CreateProject() {
   const [startDate, setStartDate] = useState(new Date());
@@ -26,6 +51,52 @@ export default function CreateProject() {
     startDate: startDate,
     endDate: endDate,
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState({} as Record<string, string>);
+  const [clients, setClients] = useState<Client[]>([])
+  useEffect(() => {
+      const fetchProjectNumber = async () => {
+        try {
+          const response = await fetch("/api/project-number");
+          const data = await response.json();
+          if (data.projectNumber) {
+            setProject((prev) => ({
+              ...prev,
+              projectNumber: data.projectNumber,
+            }));
+          }
+  
+          console.log("project number:", data.projectNumber);
+        } catch (error) {
+          console.error("Error fetching project number:", error);
+        }
+      };
+
+      const fetchClientData = async () => {
+        try {
+          const response = await fetch("/api/customers")
+          const data = await response.json()
+          setClients(data)
+          console.log("Client data:", clients)
+        } catch (error) {
+          console.error("Error fetching client data:", error)
+        }
+      }
+  
+      fetchProjectNumber();
+      fetchClientData();
+    }, []);
+
+    const handleClientChange = (clientId: string) => {
+      const client = clients.find((c) => c.id === clientId)
+      console.log("this the client", client)
+      if (client) {
+        setProject((prev) => ({
+          ...prev,
+          customerName: client.customerName,
+        }))
+      }
+    }
 
   const handleFormChange = (
     e: React.ChangeEvent<
@@ -41,6 +112,20 @@ export default function CreateProject() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    const validationResult = projectSchema.safeParse(project);
+    if (!validationResult.success) {
+      const newErrors: Record<string, string> = {};
+      validationResult.error.errors.forEach((err) => {
+        if (err.path.length > 0) {
+          newErrors[err.path[0] as string] = err.message;
+        }
+      });
+      setErrors(newErrors);
+      return;
+    }
+
+    setErrors({});
     console.log("project data:", project);
     try {
       const response = await fetch("/api/project", {
@@ -56,6 +141,8 @@ export default function CreateProject() {
       }
     } catch (error) {
       console.error("Error submitting project:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -66,6 +153,7 @@ export default function CreateProject() {
           <Badge variant="secondary" className="text-sm px-3 py-1">
             Draft
           </Badge>
+          <div className="flex flex-col gap-2 w-full">
           <Input
             className="max-w-1xl"
             name="projectName"
@@ -73,6 +161,8 @@ export default function CreateProject() {
             onChange={handleFormChange}
             placeholder="Project Name"
           />
+          {errors.projectName && <p className="text-xs text-red-500">{errors.projectName}</p>}
+          </div>
         </div>
         <form noValidate>
           <div className="grid md:grid-cols-2 gap-6 mb-6">
@@ -87,19 +177,26 @@ export default function CreateProject() {
                   name="projectNumber"
                   value={project.projectNumber}
                   onChange={handleFormChange}
-                  className="rounded-l-none"
+                  readOnly
+                  className="bg-gray-100 cursor-not-allowed ml-1 rounded-l-none"
                 />
               </div>
             </div>
 
             <div>
               <Label htmlFor="currency">Customer Name</Label>
-              <Input
-                name="customerName"
-                value={project.customerName}
-                onChange={handleFormChange}
-                placeholder="Enter the customer name"
-              />
+              <Select onValueChange={handleClientChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select client" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {clients.map((client) => (
+                      <SelectItem key={client.id} value={client.id}>
+                        {client.customerName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
             </div>
           </div>
 
@@ -175,8 +272,12 @@ export default function CreateProject() {
                         }));
                       }}
                     />
+                    
                   </PopoverContent>
                 </Popover>
+                {errors.endDate && (
+                  <p className="text-xs text-red-500">{errors.endDate}</p>
+                )}
               </div>
             </div>
           </div>
@@ -200,8 +301,8 @@ export default function CreateProject() {
           </div>
 
           <div className="flex justify-center">
-            <Button onClick={handleSubmit} type="submit" className="w-full">
-              Submit
+            <Button onClick={handleSubmit} type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? "Creating..." : "Create"}
             </Button>
           </div>
         </form>

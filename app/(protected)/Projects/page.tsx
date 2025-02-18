@@ -130,7 +130,7 @@ export default function InvoicesTable() {
           <TableBody>
             {projects.map((project) => (
               <TableRow key={project.projectNumber}>
-                <TableCell className="font-medium">
+                <TableCell className="font-medium cursor-pointer" onClick={() => window.location.replace(`/Projects/Project-View?id=${project.id}`)}>
                   #{project.projectNumber}
                 </TableCell>
                 <TableCell>{project.projectName}</TableCell>

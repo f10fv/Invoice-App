@@ -252,7 +252,14 @@ export default function GlobalSearch() {
         </Button>
       </div>
       {isOpen && results && (
-        <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg">
+        <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg"
+        style={{
+          zIndex: 9999,
+          backgroundColor: 'white',
+          border: '1px solid #e5e7eb',
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+        }}
+        >
           {results.invoices && results.invoices.length > 0 && (
             <div>
               <h3 className="px-4 py-2 text-sm font-semibold text-gray-500">Invoices</h3>
