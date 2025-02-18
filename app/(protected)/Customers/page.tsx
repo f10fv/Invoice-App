@@ -77,6 +77,7 @@ export default function CustomersTable() {
                 Manage your customers right here
               </p>
             </div>
+            <Button onClick={() => {window.location.replace("/Customers/Customer-Create")}}>Create customer</Button>
           </div>
           <div className="w-full rounded-md border h-96 overflow-y-auto">
             <Table>
