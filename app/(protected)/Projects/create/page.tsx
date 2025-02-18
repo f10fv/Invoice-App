@@ -127,13 +127,20 @@ export default function CreateProject() {
 
     setErrors({});
     console.log("project data:", project);
+
+    const finalProject = {
+      ...project,
+      startDate: project.startDate.toLocaleDateString('en-GB'),
+      endDate: project.endDate.toLocaleDateString('en-GB')
+    }
+    console.log("finalProject data:", finalProject);
     try {
       const response = await fetch("/api/project", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(project),
+        body: JSON.stringify(finalProject),
       });
 
       if (response.ok) {

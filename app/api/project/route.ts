@@ -8,15 +8,26 @@ export async function POST(request: Request) {
 
         const parseProjectNumber = parseInt(project.projectNumber);
         console.log("Parsed project number:", parseProjectNumber);
+        const parseDate = (dateString: { split: (arg0: string) => [any, any, any]; }) => {
+            const [day, month, year] = dateString.split('/');
+            return new Date(`${year}-${month}-${day}T00:00:00.000Z`);
+        };
 
+        const startDate = parseDate(project.startDate);
+        const endDate = parseDate(project.endDate);
+
+        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+            throw new Error("Invalid date values");
+        }
+        
         const newProject = await db.projects.create({
             data: {
                 projectName: project.projectName,
                 projectNumber: project.projectNumber,
                 customerName: project.customerName,
                 description: project.description,
-                startDate: new Date(project.startDate),
-                endDate: new Date(project.endDate),
+                startDate: startDate,
+                endDate: endDate,
                 status: "Not Started",
             },
         });
