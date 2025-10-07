@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+<h1 align="center">🧾 Invoice Management App</h1>
 
-## Getting Started
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" />
+  <img src="https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white" />
+  <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" />
+  <img src="https://img.shields.io/badge/TailwindCSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" />
+  <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" />
+</p>
 
-First, run the development server:
+<p align="center">
+  A modern and efficient full-stack application for managing invoices, clients, and payments — built with clarity, precision, and scalability in mind.
+</p>
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 Overview
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The **Invoice Management App** is designed to help individuals and small businesses manage their invoices, clients, and payments in one place.  
+It ensures smooth workflow management with features like payment tracking, client records, and a detailed dashboard overview.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+---
 
-## Learn More
+## 🧩 Core Features
 
-To learn more about Next.js, take a look at the following resources:
+- 🧾 **Invoice Management** — create, edit, and track invoices with payment status.  
+- 👥 **Client Management** — store and manage client details efficiently.  
+- 💳 **Payment Tracking** — monitor paid and pending invoices with status updates.  
+- 📊 **Dashboard Overview** — view total invoices, revenue, and client activity.  
+- 🕵️ **Search & Filters** — quickly locate invoices or clients.  
+- 🧠 **Audit Trail** — maintain transparency of all edits and updates.  
+- 🔐 **Authentication & Role Access** — secure user access with NextAuth.  
+- 📅 **Due Date Reminders** — track upcoming payments and overdue invoices.  
+- 📤 **Data Export (CSV / PDF)** — generate reports for accounting or sharing.  
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## 🧠 System Design Notes
 
-## Deploy on Vercel
+- Built on a **modular architecture** for maintainability and scalability.  
+- Integrates **Prisma relations** between users, clients, and invoices.  
+- Implements **secure CRUD** operations with validation and access control.  
+- Includes **responsive UI** optimized for desktop and mobile devices.  
+- Supports **future integrations** like PDF generation and automated reminders.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
