@@ -16,6 +16,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { CalendarIcon } from "lucide-react";
 import { z } from "zod";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
+import { cn } from "@/lib/utils"
+import { Check, ChevronsUpDown } from "lucide-react"
 
 const projectSchema = z.object({
   projectName: z.string().min(3, "Project name must be at least 3 characters"),
@@ -51,6 +54,7 @@ export default function CreateProject() {
     startDate: startDate,
     endDate: endDate,
   });
+  const [open, setOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({} as Record<string, string>);
   const [clients, setClients] = useState<Client[]>([])
@@ -66,7 +70,6 @@ export default function CreateProject() {
             }));
           }
   
-          console.log("project number:", data.projectNumber);
         } catch (error) {
           console.error("Error fetching project number:", error);
         }
@@ -77,7 +80,6 @@ export default function CreateProject() {
           const response = await fetch("/api/customers")
           const data = await response.json()
           setClients(data)
-          console.log("Client data:", clients)
         } catch (error) {
           console.error("Error fetching client data:", error)
         }
@@ -89,7 +91,6 @@ export default function CreateProject() {
 
     const handleClientChange = (clientId: string) => {
       const client = clients.find((c) => c.id === clientId)
-      console.log("this the client", client)
       if (client) {
         setProject((prev) => ({
           ...prev,
@@ -97,7 +98,7 @@ export default function CreateProject() {
         }))
       }
     }
-
+    
   const handleFormChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -113,6 +114,11 @@ export default function CreateProject() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    if(project.projectNumber === "") {
+      alert("Project number is not generated yet. Please try again later.");
+      setIsSubmitting(false);
+      return;
+    }
     const validationResult = projectSchema.safeParse(project);
     if (!validationResult.success) {
       const newErrors: Record<string, string> = {};
@@ -126,14 +132,12 @@ export default function CreateProject() {
     }
 
     setErrors({});
-    console.log("project data:", project);
 
     const finalProject = {
       ...project,
       startDate: project.startDate.toLocaleDateString('en-GB'),
       endDate: project.endDate.toLocaleDateString('en-GB')
     }
-    console.log("finalProject data:", finalProject);
     try {
       const response = await fetch("/api/project", {
         method: "POST",
@@ -146,6 +150,7 @@ export default function CreateProject() {
       if (response.ok) {
         alert("project submitted successfully!");
       }
+      window.location.href = "/Projects";
     } catch (error) {
       console.error("Error submitting project:", error);
     } finally {
@@ -154,13 +159,12 @@ export default function CreateProject() {
   };
 
   return (
-    <Card className="w-full max-w-6xl mx-auto bg-white">
+    <Card className="w-full h-full max-w-6xl mx-auto bg-white space-y-4">
       <CardContent className="p-6">
+      <h1 className="text-xl font-semibold mb-7">Create Project</h1>
         <div className="flex gap-2 mb-6">
-          <Badge variant="secondary" className="text-sm px-3 py-1">
-            Draft
-          </Badge>
           <div className="flex flex-col gap-2 w-full">
+          <Label>Project Name</Label>
           <Input
             className="max-w-1xl"
             name="projectName"
@@ -191,19 +195,43 @@ export default function CreateProject() {
             </div>
 
             <div>
-              <Label htmlFor="currency">Customer Name</Label>
-              <Select onValueChange={handleClientChange}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select client" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {clients.map((client) => (
-                      <SelectItem key={client.id} value={client.id}>
-                        {client.customerName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            <Label htmlFor="currency">Customer Name</Label>
+              <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between">
+                    {project.customerName || "Select client..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start" sideOffset={0}>
+                  <Command>
+                    <CommandInput placeholder="Search clients..." />
+                    <CommandList>
+                      <CommandEmpty>No client found.</CommandEmpty>
+                      <CommandGroup>
+                        {clients.map((client) => (
+                          <CommandItem
+                            key={client.id}
+                            value={client.customerName}
+                            onSelect={() => {
+                              handleClientChange(client.id)
+                              setOpen(false)
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                project.customerName === client.customerName ? "opacity-100" : "opacity-0",
+                              )}
+                            />
+                            {client.customerName}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
 

@@ -89,6 +89,27 @@ export default function InvoicesTable() {
     }
   };
 
+  const handleStatusChange = async (id: string, newStatus: string) => {
+    try {
+      const response = await fetch(`/api/invoice/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      })
+      if (!response.ok) {
+        throw new Error(`Failed to mark invoice as ${newStatus}`)
+      }
+      const updatedProject = await response.json()
+      setInvoices((prevInvoices) =>
+        prevInvoices.map((invoice) => (invoice.id === id ? { ...invoice, status: newStatus } : invoice)),
+      )
+    } catch (error: any) {
+      setError(error.message)
+    }
+  }
+
   const handleDelete = async (id: string) => {
     try {
       const response = await fetch(`/api/invoice/${id}`, {
@@ -274,10 +295,11 @@ export default function InvoicesTable() {
           <TableHeader className="sticky top-0 bg-white z-10">
             <TableRow>
               <TableHead>Invoice ID</TableHead>
+              <TableHead>Date</TableHead>
               <TableHead>Customer</TableHead>
               <TableHead>Amount</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Date</TableHead>
+              
               <TableHead className="w-[70px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -287,8 +309,15 @@ export default function InvoicesTable() {
                 <TableCell className="font-medium cursor-pointer" onClick={() => window.location.replace(`/Invoices/Invoice-View?id=${invoice.id}`)}>
                   #{invoice.invoiceNumber}
                 </TableCell>
+                <TableCell>
+                  {new Date(invoice.date).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </TableCell>
                 <TableCell>{invoice.clientName}</TableCell>
-                <TableCell>${invoice.total}</TableCell>
+                <TableCell>${invoice.total.toLocaleString("en-US")}</TableCell>
                 <TableCell>
                   <Badge
                     variant={
@@ -299,13 +328,7 @@ export default function InvoicesTable() {
                     {invoice.status}
                   </Badge>
                 </TableCell>
-                <TableCell>
-                  {new Date(invoice.date).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </TableCell>
+                
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -315,11 +338,15 @@ export default function InvoicesTable() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={() => handleMarkAsPaid(invoice.id)}
-                      >
-                        Mark as paid
-                      </DropdownMenuItem>
+                    {invoice.status === "PAID" ? (
+                        <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, "UNPAID")}>
+                          Mark as unpaid
+                        </DropdownMenuItem>
+                      ) : (
+                        <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, "PAID")}>
+                          Mark as paid
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem onClick={() => handleView(invoice.id)}>
                         View invoice
                       </DropdownMenuItem>

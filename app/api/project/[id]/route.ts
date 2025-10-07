@@ -4,11 +4,13 @@ import { NextResponse } from "next/server";
 
 export async function PATCH (req: Request, { params }: { params: { id: string } }) {
     const { id } = params;
+    const status = await req.json();
+    console.log("Status:", status);
       try {
         const updatedProject = await db.projects.update({
           where: { id: id as string },
           data: {
-            status: "Completed",
+            status: status.status,
           },
         });
         return NextResponse.json(updatedProject, { status: 200 });

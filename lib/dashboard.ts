@@ -1,6 +1,5 @@
 import { db } from '@/lib/db'
 import { DashboardStats, Invoice } from '../types/dashboard'
-import { InvoiceStatus } from '@prisma/client';
 
 export async function getDashboardStats(): Promise<DashboardStats> {
   const [totalRevenue, invoices] = await Promise.all([
@@ -21,12 +20,17 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 }
 
 export async function getRecentInvoices(): Promise<Invoice[]> {
-  return db.invoice.findMany({
+  const invoices = await db.invoice.findMany({
     take: 6,
     orderBy: {
       createdAt: 'desc',
     },
   })
+
+  return invoices.map(invoice => ({
+    ...invoice,
+    status: invoice.status as import('../types/dashboard').InvoiceStatus,
+  }))
 }
 
 export async function getPaidInvoicesTimeline(): Promise<{ date: string; amount: number }[]> {

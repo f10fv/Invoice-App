@@ -4,11 +4,13 @@ import { NextResponse } from "next/server";
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
     const { id } = params;
+    const status = await req.json();
+    console.log("this the status", status)
       try {
         const updatedInvoice = await db.invoice.update({
           where: { id: id as string },
           data: {
-            status: "PAID",
+            status: status.status,
           },
         });
         return NextResponse.json(updatedInvoice, { status: 200 });
@@ -43,7 +45,6 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
           project: true,
         },
       });
-      console.log("This the invoice" ,invoice);
       return NextResponse.json(invoice, { status: 200 });
     } catch (error) {
       console.error('Error fetching invoice:', error);
@@ -92,7 +93,8 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       where: { customerEmail: invoice.clientEmail },
       select: { id: true },
     })
-    console.log("this the client id", client)
+    const formattedDate = new Date(invoice.date).toISOString();
+
     try {
       const updatedInvoice = await db.invoice.update({
         where: { id },
@@ -107,13 +109,13 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
           clientAddress: invoice.clientAddress,
           customerId: client?.id,
           projectId: invoice.projectId,
-          date: new Date(invoice.date),
+          date: formattedDate,
           dueDate: parseDueDate ?? 0,
           note: invoice.note,
           total: invoice.total,
           status: "PENDING",
           invoiceItems: {
-            deleteMany: {}, // Delete existing items
+            deleteMany: {},
             create: invoice.invoiceItems.map((item: any) => ({
               description: item.description,
               quantity: Number(item.quantity),

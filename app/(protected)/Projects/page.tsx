@@ -54,26 +54,26 @@ export default function InvoicesTable() {
     fetchProjects();
   }, []);
 
-  const handleMarkAsCompleted = async (id: string) => {
+  const handleStatusChange = async (id: string, newStatus: string) => {
     try {
       const response = await fetch(`/api/project/${id}`, {
         method: "PATCH",
-      });
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      })
       if (!response.ok) {
-        throw new Error("Failed to mark invoice as paid");
+        throw new Error(`Failed to mark project as ${newStatus}`)
       }
-      const updateProject = await response.json();
-      setProjects((prevProject) =>
-        prevProject.map((project) =>
-          project.id === id
-            ? { ...project, status: "Completed" }
-            : project
-        )
-      );
+      const updatedProject = await response.json()
+      setProjects((prevProjects) =>
+        prevProjects.map((project) => (project.id === id ? { ...project, status: newStatus } : project)),
+      )
     } catch (error: any) {
-      setError(error.message);
+      setError(error.message)
     }
-  };
+  }
 
   const handleDelete = async (id: string) => {
     try {
@@ -118,12 +118,12 @@ export default function InvoicesTable() {
           <TableHeader className="sticky top-0 bg-white z-10">
             <TableRow>
               <TableHead>Project ID</TableHead>
-              <TableHead>Project Name</TableHead>
-              <TableHead>Customer Name</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Description</TableHead>
               <TableHead>Start Date</TableHead>
               <TableHead>End Date</TableHead>
+              <TableHead>Project Name</TableHead>
+              <TableHead>Customer Name</TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead>Status</TableHead>
               <TableHead className="w-[70px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -133,19 +133,6 @@ export default function InvoicesTable() {
                 <TableCell className="font-medium cursor-pointer" onClick={() => window.location.replace(`/Projects/Project-View?id=${project.id}`)}>
                   #{project.projectNumber}
                 </TableCell>
-                <TableCell>{project.projectName}</TableCell>
-                <TableCell>{project.customerName}</TableCell>
-                <TableCell>
-                  <Badge
-                    variant={
-                      project.status === "Completed" ? "secondary" : "default"
-                    }
-                    className="bg-black text-white"
-                  >
-                    {project.status}
-                  </Badge>
-                </TableCell>
-                <TableCell>{project.description}</TableCell>
                 <TableCell>
                   {new Date(project.startDate).toLocaleDateString("en-US", {
                     month: "short",
@@ -160,6 +147,19 @@ export default function InvoicesTable() {
                     year: "numeric",
                   })}
                 </TableCell>
+                <TableCell>{project.projectName}</TableCell>
+                <TableCell>{project.customerName}</TableCell>
+                <TableCell>{project.description}</TableCell>
+                <TableCell>
+                  <Badge
+                    variant={
+                      project.status === "Completed" ? "secondary" : "default"
+                    }
+                    className="bg-black text-white"
+                  >
+                    {project.status}
+                  </Badge>
+                </TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -169,7 +169,15 @@ export default function InvoicesTable() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleMarkAsCompleted(project.id)}>Mark as completed</DropdownMenuItem>
+                    {project.status === "Completed" ? (
+                        <DropdownMenuItem onClick={() => handleStatusChange(project.id, "Not Started")}>
+                          Mark as Not Started
+                        </DropdownMenuItem>
+                      ) : (
+                        <DropdownMenuItem onClick={() => handleStatusChange(project.id, "Completed")}>
+                          Mark as Completed
+                        </DropdownMenuItem>
+                      )}
                     <DropdownMenuItem 
                       onClick={() => {window.location.href = `/Projects/Project-View?id=${project.id}`}}
                       >

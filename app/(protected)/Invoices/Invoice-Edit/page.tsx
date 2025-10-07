@@ -1,419 +1,3 @@
-// "use client";
-
-// import { useEffect, useRef, useState } from "react";
-// import { Badge } from "@/components/ui/badge";
-// import { Button } from "@/components/ui/button";
-// import { Calendar } from "@/components/ui/calendar";
-// import { Card, CardContent } from "@/components/ui/card";
-// import { Input } from "@/components/ui/input";
-// import { Label } from "@/components/ui/label";
-// import {
-//   Popover,
-//   PopoverContent,
-//   PopoverTrigger,
-// } from "@/components/ui/popover";
-// import {
-//   Select,
-//   SelectContent,
-//   SelectItem,
-//   SelectTrigger,
-//   SelectValue,
-// } from "@/components/ui/select";
-// import { Textarea } from "@/components/ui/textarea";
-// import { CalendarIcon } from "lucide-react";
-// import { formatCurrency } from "@/lib/formatCurrency";
-// import { SubmitButton } from "@/app/(protected)/_components/submitButton";
-// import { useSearchParams } from "next/navigation";
-
-// interface InvoiceItem {
-//   id: number;
-//   description: string;
-//   quantity: number;
-//   rate: number;
-//   amount: number;
-// }
-// interface InvoiceData {
-//     id: string;
-//     total: number;
-//     status: "PAID" | "PENDING";
-//     date: string;
-//     dueDate: number;
-//     fromName: string;
-//     fromEmail: string;
-//     fromAddress: string;
-//     clientName: string;
-//     clientEmail: string;
-//     clientAddress: string;
-//     currency: string;
-//     invoiceNumber: number;
-//     note?: string;
-//     createdAt: string;
-//     updatedAt: string;
-//     invoiceItems: {
-//       id: number;
-//       description: string;
-//       quantity: number;
-//       rate: number;
-//       amount: number;
-//       invoiceId: string;
-//     }[];
-//   }
-// export default function EditInvoice() {
-//   const id = useSearchParams().get("id")
-//   const [loading, setLoading] = useState(true)
-//   const invoiceRef = useRef<InvoiceData | null>(null)
-
-//   const [selectedDate, setSelectedDate] = useState(new Date())
-//   const [invoice, setInvoice] = useState<InvoiceData>({
-//     id: "",
-//     invoiceNumber: 0,
-//     currency: "USD",
-//     fromName: "",
-//     fromEmail: "",
-//     fromAddress: "",
-//     clientName: "",
-//     clientEmail: "",
-//     clientAddress: "",
-//     date: selectedDate.toISOString(),
-//     dueDate: 0,
-//     invoiceItems: [{ id: 0, description: "", quantity: 0, rate: 0, amount: 0, invoiceId: "" }],
-//     note: "",
-//     total: 0,
-//     status: "PENDING",
-//     createdAt: "",
-//     updatedAt: "",
-//   })
-
-//   useEffect(() => {
-//     if (!id) return
-
-//     setLoading(true)
-//     fetch(`/api/invoice/${id}`)
-//       .then((response) => response.json())
-//       .then((data) => {
-//         setInvoice(data)
-//         invoiceRef.current = data
-//         setLoading(false)
-//         console.log("This is the setInvoiceBeforeEdit ", data)
-//       })
-//       .catch((error) => {
-//         console.error("Error fetching invoice:", error)
-//         setLoading(false)
-//       })
-//   }, [id])
-//   const handleFormChange = (
-//     e: React.ChangeEvent<
-//       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-//     >
-//   ) => {
-//     const { name, value } = e.target;
-//     setInvoice((prevInvoice) => ({
-//       ...prevInvoice,
-//       [name]: value,
-//     }));
-//   };
-
-//   const handleItemChange = (
-//     index: number,
-//     field: keyof Omit<InvoiceItem, 'id'>,
-//     value: string | number
-//   ) => {
-//     const updatedItems = [...invoice.invoiceItems];
-//     const item = updatedItems[index];
-
-//     if (field === 'description') {
-//       item[field] = value as string;
-//     } else if (field === 'quantity' || field === 'rate') {
-//       item[field] = Number(value) || 0;
-//     }
-
-//     const quantity = Number(item.quantity) || 0;
-//     const rate = Number(item.rate) || 0;
-//     item.amount = quantity * rate;
-
-//     const updatedTotal = updatedItems.reduce(
-//       (total, item) => total + (item.amount || 0),
-//       0
-//     );
-
-//     setInvoice((prevInvoice) => ({
-//       ...prevInvoice,
-//       invoiceItems: updatedItems,
-//       total: updatedTotal,
-//     }));
-//   };
-
-//   const handleSubmit = async (e: React.FormEvent) => {
-//     e.preventDefault();
-//     try {
-//       const response = await fetch(`/api/invoice/${id}`, {
-//         method: "PUT",
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify(invoice),
-//       });
-
-//       if (response.ok) {
-//         alert("Invoice submitted successfully!");
-//       }
-//     } catch (error) {
-//       console.error("Error submitting invoice:", error);
-//     }
-//   };
-//   return (
-//     <Card className="w-full max-w-6xl mx-auto bg-white">
-//       <CardContent className="p-6">
-//         <form onSubmit={handleSubmit} noValidate>
-//           <div className="grid md:grid-cols-2 gap-6 mb-6">
-//             <div>
-//               <Label htmlFor="invoiceNumber">Invoice No.</Label>
-//               <div className="flex">
-//                 <span className="px-3 border border-r-0 rounded-l-md bg-muted flex items-center">
-//                   #
-//                 </span>
-//                 <Input
-//                   id="invoiceNumber"
-//                   name="invoiceNumber"
-//                   value={invoice.invoiceNumber}
-//                   readOnly
-//                   onChange={handleFormChange}
-//                   className="bg-gray-100 cursor-not-allowed"
-//                 />
-//               </div>
-//             </div>
-
-//             <div>
-//               <Label htmlFor="currency">Currency</Label>
-//               <Select
-//                 value={invoice.currency}
-//                 name="currency"
-//                 onValueChange={(value) =>
-//                   setInvoice((prev) => ({ ...prev, currency: value }))
-//                 }
-//               >
-//                 <SelectTrigger id="currency">
-//                   <SelectValue placeholder="Select Currency" />
-//                 </SelectTrigger>
-//                 <SelectContent>
-//                   <SelectItem value="USD">
-//                     United States Dollar -- USD
-//                   </SelectItem>
-//                   <SelectItem value="EUR">Euro -- EUR</SelectItem>
-//                 </SelectContent>
-//               </Select>
-//             </div>
-//           </div>
-
-//           <div className="grid md:grid-cols-2 gap-6 mb-6">
-//             <div>
-//               <Label>From</Label>
-//               <div className="space-y-2">
-//                 <Input
-//                   name="fromName"
-//                   value={invoice.fromName}
-//                   onChange={handleFormChange}
-//                   placeholder="Your Name"
-//                   readOnly
-//                   className="bg-gray-100 cursor-not-allowed"
-//                 />
-//                 <Input
-//                   name="fromEmail"
-//                   value={invoice.fromEmail}
-//                   onChange={handleFormChange}
-//                   placeholder="Your Email"
-//                   readOnly
-//                   className="bg-gray-100 cursor-not-allowed"
-//                 />
-//                 <Input
-//                   name="fromAddress"
-//                   value={invoice.fromAddress}
-//                   onChange={handleFormChange}
-//                   placeholder="Your Address"
-//                   readOnly
-//                   className="bg-gray-100 cursor-not-allowed"
-//                 />
-//               </div>
-//             </div>
-
-//             <div>
-//               <Label>To</Label>
-//               <div className="space-y-2">
-//                 <Input
-//                   name="clientName"
-//                   value={invoice.clientName}
-//                   onChange={handleFormChange}
-//                   placeholder="Client Name"
-//                 />
-//                 <Input
-//                   name="clientEmail"
-//                   value={invoice.clientEmail}
-//                   onChange={handleFormChange}
-//                   placeholder="Client Email"
-//                 />
-//                 <Input
-//                   name="clientAddress"
-//                   value={invoice.clientAddress}
-//                   onChange={handleFormChange}
-//                   placeholder="Client Address"
-//                 />
-//               </div>
-//             </div>
-//           </div>
-
-//           <div className="grid md:grid-cols-2 gap-6 mb-6">
-//             <div>
-//               <Label>Date</Label>
-//               <Popover>
-//                 <PopoverTrigger asChild>
-//                   <Button
-//                     variant="outline"
-//                     className="w-full justify-start text-left font-normal"
-//                   >
-//                     <CalendarIcon className="mr-2 h-4 w-4" />
-//                     {selectedDate ? (
-//                       selectedDate.toLocaleDateString("en-US", {
-//                         year: "numeric",
-//                         month: "long",
-//                         day: "numeric",
-//                       })
-//                     ) : (
-//                       <span>Pick a date</span>
-//                     )}
-//                   </Button>
-//                 </PopoverTrigger>
-//                 <PopoverContent className="w-auto p-0">
-//                   <Calendar
-//                     mode="single"
-//                     selected={selectedDate}
-//                     onSelect={(date) => {
-//                       setSelectedDate(date || new Date());
-//                       setInvoice((prev) => ({
-//                         ...prev,
-//                         date: (date || new Date()).toLocaleDateString("en-US", {
-//                           year: "numeric",
-//                           month: "long",
-//                           day: "numeric",
-//                         }),
-//                       }));
-//                     }}
-//                   />
-//                 </PopoverContent>
-//               </Popover>
-//             </div>
-
-//             <div>
-//               <Label htmlFor="dueDate">Invoice Due</Label>
-//               <Select
-//                 name="dueDate"
-//                 value={invoice.dueDate.toString()}
-//                 onValueChange={(value) =>
-//                   setInvoice((prev) => ({ ...prev, dueDate: parseInt(value) }))
-//                 }
-//               >
-//                 <SelectTrigger id="dueDate">
-//                   <SelectValue placeholder="Select due date" />
-//                 </SelectTrigger>
-//                 <SelectContent>
-//                   <SelectItem value="0">Due on Receipt</SelectItem>
-//                   <SelectItem value="15">Net 15</SelectItem>
-//                   <SelectItem value="30">Net 30</SelectItem>
-//                 </SelectContent>
-//               </Select>
-//             </div>
-//           </div>
-
-//           <div className="mb-6">
-//             <div className="grid grid-cols-12 gap-4 mb-2 font-medium">
-//               <div className="col-span-6">Description</div>
-//               <div className="col-span-2">Quantity</div>
-//               <div className="col-span-2">Rate</div>
-//               <div className="col-span-2">Amount</div>
-//             </div>
-//             <div className="grid grid-cols-12 gap-4 items-start">
-//               <div className="col-span-6">
-//                 <Textarea
-//                   name="description"
-//                   value={invoice.invoiceItems[0]?.description}
-//                   onChange={(e) =>
-//                     handleItemChange(0, "description", e.target.value)
-//                   }
-//                   placeholder="Item description"
-//                 />
-//               </div>
-//               <div className="col-span-2">
-//                 <Input
-//                   type="number"
-//                   name="quantity"
-//                   value={invoice.invoiceItems[0]?.quantity}
-//                   onChange={(e) =>
-//                     handleItemChange(0, "quantity", e.target.value)
-//                   }
-//                 />
-//               </div>
-//               <div className="col-span-2">
-//                 <Input
-//                   type="number"
-//                   name="rate"
-//                   value={invoice.invoiceItems[0]?.rate}
-//                   onChange={(e) => handleItemChange(0, "rate", e.target.value)}
-//                 />
-//               </div>
-//               <div className="col-span-2">
-//                 <Input
-//                   value={formatCurrency({
-//                     amount: invoice.invoiceItems[0]?.amount || 0,
-//                     currency: invoice.currency as any,
-//                   })}
-//                   disabled
-//                 />
-//               </div>
-//             </div>
-//           </div>
-
-//           <div className="flex justify-end mb-6">
-//             <div className="w-1/3">
-//               <div className="flex justify-between py-2">
-//                 <span>Subtotal</span>
-//                 <span>
-//                   {formatCurrency({
-//                     amount: invoice.total,
-//                     currency: invoice.currency as any,
-//                   })}
-//                 </span>
-//               </div>
-//               <div className="flex justify-between py-2 border-t">
-//                 <span>Total ({invoice.currency})</span>
-//                 <span className="font-medium">
-//                   {formatCurrency({
-//                     amount: invoice.total,
-//                     currency: invoice.currency as any,
-//                   })}
-//                 </span>
-//               </div>
-//             </div>
-//           </div>
-
-//           <div className="mb-6">
-//             <Label htmlFor="note">Note</Label>
-//             <Textarea
-//               id="note"
-//               name="note"
-//               value={invoice.note}
-//               onChange={handleFormChange}
-//               placeholder="Add your notes here..."
-//             />
-//           </div>
-
-//           <div className="flex justify-end">
-//             <SubmitButton text="Send Invoice" />
-//           </div>
-//         </form>
-//       </CardContent>
-//     </Card>
-//   );
-// }
-
 "use client";
 
 import type React from "react";
@@ -450,6 +34,16 @@ import {
 } from "@/components/ui/table";
 import { Plus, Trash2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { cn } from "@/lib/utils";
+import { Check, ChevronsUpDown } from "lucide-react";
 
 interface InvoiceItem {
   id: number;
@@ -481,14 +75,6 @@ interface Project {
   customerName: string;
 }
 
-// const invoiceSchema = z.object({
-//   invoiceNumber: z.string().min(1, "Invoice number is required"),
-//   currency: z.enum(["USD", "EUR"]),
-//   date: z.date(),
-//   dueDate: z.string().min(1, "Due date is required"),
-//   note: z.string().optional(),
-//   total: z.number().min(0, "Total must be a positive value"),
-// });
 
 export default function EditInvoice() {
   const id = useSearchParams().get("id");
@@ -496,9 +82,9 @@ export default function EditInvoice() {
   const [invoice, setInvoice] = useState({
     invoiceNumber: "",
     currency: "USD",
-    fromName: "",
-    fromEmail: "",
-    fromAddress: "",
+    fromName: "Karim Mahmoud",
+    fromEmail: "karim@gmail.com",
+    fromAddress: "Tersa street 152, cairo, egypt",
     clientName: "",
     clientEmail: "",
     clientAddress: "",
@@ -517,13 +103,16 @@ export default function EditInvoice() {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [lineItems, setLineItems] = useState<LineItem[]>([]);
+  const [open, setOpen] = useState(false);
+  const [openProject, setOpenProject] = useState(false);
+  const project = invoice;
 
   useEffect(() => {
     const fetchInvoiceData = async () => {
       try {
         const response = await fetch(`/api/invoice/${id}`);
         const data = await response.json();
-
+  
         setInvoice(data);
         setSelectedDate(new Date(data.date));
         setLineItems(
@@ -532,21 +121,25 @@ export default function EditInvoice() {
             ...item,
           }))
         );
-        setSelectedClient(data.customer);
+        setSelectedClient((prev) =>
+          prev?.customerName === data.customer.customerName ? prev : data.customer
+        );
         setSelectedProject(data.project);
-
-        console.log("Fetched invoice:", data);
+  
       } catch (error) {
         console.error("Error fetching invoice:", error);
       }
     };
+  
+    fetchInvoiceData();
+  }, [id]);
 
+  useEffect(() => {
     const fetchClientData = async () => {
       try {
         const response = await fetch("/api/customers");
         const data = await response.json();
         setClients(data);
-        console.log("Client data:", data);
       } catch (error) {
         console.error("Error fetching client data:", error);
       }
@@ -556,19 +149,25 @@ export default function EditInvoice() {
       try {
         const response = await fetch("/api/project");
         const data = await response.json();
-        setProjects(data);
-        console.log("Project data:", data);
+        const filteredProjects = selectedClient
+          ? data.filter(
+              (project: Project) =>
+                project.customerName === selectedClient.customerName
+            )
+          : [];
+        setProjects(filteredProjects);
       } catch (error) {
         console.error("Error fetching project data:", error);
       }
     };
 
-    if (id) {
-      fetchInvoiceData();
-    }
     fetchClientData();
-    fetchProjectData();
-  }, [id]);
+    if (selectedClient) {
+      fetchProjectData();
+    } else {
+      setProjects([]);
+    }
+  }, [selectedClient]);
 
   const handleClientChange = (clientId: string) => {
     const client = clients.find((c) => c.id === clientId);
@@ -596,47 +195,10 @@ export default function EditInvoice() {
     }));
   };
 
-  // const handleItemChange = (index: number, field: keyof Omit<InvoiceItem, "id">, value: string | number) => {
-  //   const updatedItems = [...invoice.invoiceItems]
-  //   const item = updatedItems[index]
-
-  //   if (field === "description") {
-  //     item[field] = value as string
-  //   } else if (field === "quantity" || field === "rate") {
-  //     item[field] = Number(value) || 0
-  //   }
-
-  //   const quantity = Number(item.quantity) || 0
-  //   const rate = Number(item.rate) || 0
-  //   item.amount = quantity * rate
-
-  //   const updatedTotal = updatedItems.reduce((total, item) => total + (item.amount || 0), 0)
-
-  //   setInvoice((prevInvoice) => ({
-  //     ...prevInvoice,
-  //     invoiceItems: updatedItems,
-  //     total: updatedTotal,
-  //   }))
-  // }
-
-  // const validateInvoice = () => {
-  //   const result = invoiceSchema.safeParse(invoice);
-  //   if (!result.success) {
-  //     const formattedErrors: Record<string, string> = {};
-  //     result.error.issues.forEach((issue) => {
-  //       formattedErrors[issue.path.join(".")] = issue.message;
-  //     });
-  //     setErrors(formattedErrors);
-  //     return false;
-  //   }
-  //   setErrors({});
-  //   return true;
-  // };
-
   const handleSubmit = async (e: React.FormEvent, action: "save" | "send") => {
     e.preventDefault();
     setIsSubmitting(true);
-    console.log(selectedClient)
+    console.log(selectedClient);
     const currentTotal = lineItems.reduce((sum, item) => sum + item.amount, 0);
     const finalInvoice = {
       ...invoice,
@@ -651,7 +213,6 @@ export default function EditInvoice() {
       total: currentTotal,
     };
 
-    console.log("Final invoice data:", finalInvoice);
     try {
       const response = await fetch(`/api/invoice/${id}`, {
         method: "PUT",
@@ -664,6 +225,7 @@ export default function EditInvoice() {
       if (response.ok) {
         alert("Invoice submitted successfully!");
       }
+      window.location.href = "/Invoices";
     } catch (error) {
       console.error("Error submitting invoice:", error);
     } finally {
@@ -822,29 +384,63 @@ export default function EditInvoice() {
             <div>
               <Label>To</Label>
               <div className="space-y-2">
-                <Select
-                  value={invoice.clientId}
-                  onValueChange={handleClientChange}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select client" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {clients.map((client) => (
-                      <SelectItem key={client.id} value={client.id}>
-                        {client.customerName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={open}
+                      className="w-full justify-between"
+                    >
+                      {selectedClient
+                        ? selectedClient.customerName
+                        : "Select client..."}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="w-[--radix-popover-trigger-width] p-0"
+                    align="start"
+                    sideOffset={0}
+                  >
+                    <Command>
+                      <CommandInput placeholder="Search clients..." />
+                      <CommandList>
+                        <CommandEmpty>No client found.</CommandEmpty>
+                        <CommandGroup>
+                          {clients.map((client) => (
+                            <CommandItem
+                              key={client.id}
+                              value={client.customerName}
+                              onSelect={() => {
+                                handleClientChange(client.id);
+                                setOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  selectedClient?.id === client.id
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                )}
+                              />
+                              {client.customerName}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
                 <Input
                   placeholder="Client Email"
-                  value={invoice.clientEmail}
+                  value={selectedClient?.customerEmail || ""}
                   readOnly
                 />
                 <Input
                   placeholder="Client Address"
-                  value={invoice.clientAddress}
+                  value={selectedClient?.customerAddress || ""}
                   readOnly
                 />
               </div>
@@ -853,21 +449,58 @@ export default function EditInvoice() {
 
           <Label>Project</Label>
           <div className="space-y-4 mb-6">
-            <Select
-              value={invoice.projectId}
-              onValueChange={handleProjectChange}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select project" />
-              </SelectTrigger>
-              <SelectContent>
-                {projects.map((project) => (
-                  <SelectItem key={project.id} value={project.id}>
-                    {project.projectName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover open={openProject} onOpenChange={setOpenProject}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={openProject}
+                  className="w-full justify-between"
+                >
+                  {projects.find((p) => p.id === project.projectId)
+                    ?.projectName || "Select project..."}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                className="w-[--radix-popover-trigger-width] p-0"
+                align="start"
+                sideOffset={0}
+              >
+                <Command>
+                  <CommandInput placeholder="Search projects..." />
+                  <CommandList>
+                    <CommandEmpty>
+                      {!selectedClient
+                        ? "Please select a client first"
+                        : "No projects found for this client"}
+                    </CommandEmpty>
+                    <CommandGroup>
+                      {projects.map((p) => (
+                        <CommandItem
+                          key={p.id}
+                          value={p.projectName}
+                          onSelect={() => {
+                            handleProjectChange(p.id);
+                            setOpenProject(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              project.projectId === p.id
+                                ? "opacity-100"
+                                : "opacity-0"
+                            )}
+                          />
+                          {p.projectName}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6 mb-6">
@@ -899,7 +532,7 @@ export default function EditInvoice() {
                       setSelectedDate(date || new Date());
                       setInvoice((prev) => ({
                         ...prev,
-                        date: date || new Date()
+                        date: date || new Date(),
                       }));
                     }}
                   />
@@ -971,7 +604,7 @@ export default function EditInvoice() {
                         className="w-24"
                       />
                     </TableCell>
-                    <TableCell>${item.amount.toFixed(2)}</TableCell>
+                    <TableCell>${item.amount.toLocaleString("en-US")}</TableCell>
                     <TableCell>
                       <Button
                         variant="ghost"
@@ -1031,8 +664,12 @@ export default function EditInvoice() {
           </div>
 
           <div className="flex justify-end space-x-4">
-            <Button type="button" onClick={(e) => handleSubmit(e, "save")} disabled={isSubmitting}>
-            {isSubmitting ? "Saving..." : "Save"}
+            <Button
+              type="button"
+              onClick={(e) => handleSubmit(e, "save")}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Saving..." : "Save"}
             </Button>
           </div>
         </form>

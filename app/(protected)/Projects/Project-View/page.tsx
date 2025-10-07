@@ -40,8 +40,8 @@ export default function ProjectViewPage() {
       if (!project) return <div>No project found</div>;
 
       return (
-        <div className="w-full h-full mx-auto py-8">
-        <Card className="w-full">
+        <div className="w-full h-full max-w-6xl mx-auto bg-white space-y-4">
+        <Card className="w-full h-full">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7">
             <div className="space-y-1">
               <CardTitle className="text-2xl">Project #{project.projectNumber}</CardTitle>

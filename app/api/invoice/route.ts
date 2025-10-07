@@ -178,6 +178,7 @@ export async function POST(request: Request) {
 
     const lastNumber = lastInvoice ? Number.parseInt(`${lastInvoice.invoiceNumber}`.split("-")[1]) : 0
     const newInvoiceNumber = `INV-${String(lastNumber + 1).padStart(3, "0")}`
+    const [day, month, year] = invoice.date.split("/");
 
     const newInvoice = await db.invoice.create({
       data: {
@@ -189,7 +190,7 @@ export async function POST(request: Request) {
         clientName: invoice.clientName,
         clientEmail: invoice.clientEmail,
         clientAddress: invoice.clientAddress,
-        date: new Date(invoice.date),
+        date: new Date(`${year}-${month}-${day}`),
         dueDate: parseDueDate ?? 0,
         note: invoice.note,
         total: invoice.total,

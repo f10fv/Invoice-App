@@ -13,17 +13,33 @@ export async function GET() {
 
 export async function POST(request: Request) {
     try {
-     const customer = await request.json();
-     const newCustomer = await db.customers.create({
+      const customer = await request.json();
+  
+      const lastCustomer = await db.customers.findFirst({
+        orderBy: { customerNumber: "desc" },
+        select: { customerNumber: true },
+      });
+  
+      let newCustomerNumber = 1;
+      if (lastCustomer?.customerNumber) {
+        const lastIdNumber = parseInt(lastCustomer.customerNumber.split("-")[1]);
+        newCustomerNumber = lastIdNumber + 1;
+      }
+  
+      const generatedCustomerNumber = `CUS-${String(newCustomerNumber).padStart(3, "0")}`;
+  
+      const newCustomer = await db.customers.create({
         data: {
-            customerName: customer.customerName,
-            customerEmail: customer.customerEmail,
-            customerAddress: customer.customerAddress
-        }
-     })
-     return NextResponse.json(newCustomer, { status: 200 });
+          customerName: customer.customerName,
+          customerEmail: customer.customerEmail,
+          customerAddress: customer.customerAddress,
+          customerNumber: generatedCustomerNumber, 
+        },
+      });
+  
+      return NextResponse.json(newCustomer, { status: 200 });
     } catch (error) {
-        console.error("Error creating customer:", error);
-        return NextResponse.json({ message: "Failed to create customer" }, { status: 500 });
+      console.error("Error creating customer:", error);
+      return NextResponse.json({ message: "Failed to create customer" }, { status: 500 });
     }
-}
+  }

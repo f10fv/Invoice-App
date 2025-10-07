@@ -57,10 +57,9 @@ export default function CustomerView() {
         setLoading(false);
       });
   }, [id]);
-  console.log("This the customer", customer);
-  console.log("This the invoices", invoices);
+
   return (
-    <div className="w-full h-full mx-auto py-8 space-y-6">
+    <div className="w-full h-full max-w-6xl mx-auto bg-white space-y-4">
       <Card className="w-full">
         <CardHeader>
           <CardTitle>Customer Details</CardTitle>
@@ -84,7 +83,7 @@ export default function CustomerView() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="w-full h-[50vh]">
         <CardHeader>
           <CardTitle>Invoices</CardTitle>
           <CardDescription>
@@ -96,7 +95,6 @@ export default function CustomerView() {
             <TableHeader>
               <TableRow>
                 <TableHead>Invoice #</TableHead>
-                <TableHead>Invoice Name</TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead>Amount</TableHead>
                 <TableHead>Status</TableHead>
@@ -107,11 +105,10 @@ export default function CustomerView() {
               {invoices.map((invoice: any) => (
                 <TableRow key={invoice.id}>
                   <TableCell>{invoice.invoiceNumber}</TableCell>{" "}
-                  <TableCell>{invoice.invoiceName}</TableCell>{" "}
                   <TableCell>
                     {new Date(invoice.date).toLocaleDateString()}
                   </TableCell>{" "}
-                  <TableCell>${invoice.total}</TableCell>{" "}
+                  <TableCell>${invoice.total.toLocaleString("en-US")}</TableCell>{" "}
                   <TableCell>
                     <Badge className="bg-primary">{invoice.status}</Badge>
                   </TableCell>
@@ -120,7 +117,7 @@ export default function CustomerView() {
                       href={`/Invoices/Invoice-View?id=${invoice.id}`}
                       className="text-sm text-primary hover:underline"
                     >
-                      View Details
+                      View
                     </a>
                   </TableCell>
                 </TableRow>

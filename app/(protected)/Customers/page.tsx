@@ -83,6 +83,7 @@ export default function CustomersTable() {
             <Table>
               <TableHeader className="sticky top-0 bg-white z-10">
                 <TableRow>
+                  <TableHead>Customer ID</TableHead>
                   <TableHead>Customer Name</TableHead>
                   <TableHead>Customer Email</TableHead>
                   <TableHead>Customer Address</TableHead>
@@ -92,6 +93,7 @@ export default function CustomersTable() {
               <TableBody>
                 {customers.map((customer) => (
                   <TableRow key={customer.id}>
+                    <TableCell className="font-medium cursor-pointer" onClick={() => window.location.replace(`/Customers/Customer-View?id=${customer.id}`)}>{customer.customerNumber}</TableCell>
                     <TableCell>{customer.customerName}</TableCell>
                     <TableCell>{customer.customerEmail}</TableCell>
                     <TableCell>{customer.customerAddress}</TableCell>

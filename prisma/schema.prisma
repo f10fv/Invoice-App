@@ -29,7 +29,7 @@ model User {
 model Invoice {
   id String @id @default(uuid())
   total         Int
-  status        InvoiceStatus
+  status        String
   date          DateTime
   dueDate       Int
   fromName      String
@@ -60,11 +60,6 @@ model InvoiceItem {
   invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete:Cascade)
 }
 
-enum InvoiceStatus {
-  PAID
-  PENDING
-}
-
 model Projects {
   id      String    @id @default(cuid())
   projectName String
@@ -81,6 +76,7 @@ model Projects {
 
 model Customers {
   id      String    @id @default(cuid())
+  customerNumber String
   customerName  String
   customerEmail String @unique
   customerAddress String

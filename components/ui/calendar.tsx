@@ -7,13 +7,6 @@ import { DayPicker } from "react-day-picker"
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
 
-import { CustomComponents } from 'react-day-picker';
-
-interface ExtendedCustomComponents extends CustomComponents {
-    IconLeft: React.ComponentType<{ className: string }>;
-    IconRight: React.ComponentType<{ className: string }>;
-}
-
 export type CalendarProps = React.ComponentProps<typeof DayPicker>
 
 function Calendar({
@@ -73,8 +66,7 @@ function Calendar({
         IconRight: ({ className, ...props }) => (
           <ChevronRight className={cn("h-4 w-4", className)} {...props} />
         ),
-      } as ExtendedCustomComponents
-    }
+      }}
       {...props}
     />
   )
